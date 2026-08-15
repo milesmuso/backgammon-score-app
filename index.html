@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Backgammon Score</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#111827;--frame:#292929;--panel:#1d1d1d;--line:#3a3a3a;--card1:#eeeeee;--card2:#bdbdbd;--text:#f3f4f6;--muted:#9ca3af;--amber:#f5b000;--green:#00d6a3;--red:#ff4963;--blue:#4da3ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);touch-action:manipulation;user-select:none}
+button,select,input{font:inherit}
+#app{height:100dvh;width:100vw;display:flex;align-items:center;justify-content:center;padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+.board{width:min(100%,1420px);height:min(100%,720px);background:var(--panel);border:8px solid var(--frame);border-radius:24px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 260px minmax(0,1fr);gap:16px;box-shadow:0 16px 45px #0008}
+.player{min-width:0;background:linear-gradient(#efefef,#bfbfbf);border:2px solid #aaa;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;color:#000;box-shadow:inset 0 1px 6px #0003}
+.player-head{padding:10px 12px;border-bottom:1px solid #0002;background:#0000000d}
+.player-select{width:100%;height:48px;background:#2d2d2d;color:white;border:1px solid #555;border-radius:8px;padding:0 12px;font-weight:800;text-align:center;text-transform:uppercase;letter-spacing:.3px;font-size:20px;outline:none}
+.score-area{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+.tap{position:absolute;left:0;width:100%;cursor:pointer;z-index:1}
+.tap.plus{top:0;height:60%}.tap.minus{bottom:0;height:40%;border-top:1px dashed #00000010}
+.tap:active{background:#0000000f}
+.score{font-family:Impact,"Arial Black",sans-serif;font-size:clamp(120px,24vh,290px);line-height:.82;pointer-events:none;filter:drop-shadow(0 3px 2px #0002);z-index:2}
+.away{padding:10px;text-align:center;font-weight:800;font-style:italic;color:#4a4a4a;font-size:18px;background:#00000008}
+.center{display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-width:0}
+.control-card{background:linear-gradient(#333,#222);border:1px solid #444;border-radius:12px;padding:13px;text-align:center;box-shadow:0 3px 8px #0004}
+.label{font-size:14px;color:var(--muted);font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:8px}
+.target-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.mini{width:40px;height:40px;border-radius:8px;background:#171717;border:1px solid #444;font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center}.mini.minus{color:var(--red)}.mini.plus{color:var(--green)}
+.target{font-family:Impact,"Arial Black",sans-serif;font-size:48px;line-height:1;color:white;min-width:64px}
+.crawford-wrap{flex:1;display:flex;align-items:center}.crawford{width:100%;padding:18px 8px;text-align:center;border-radius:11px;border:2px solid #2d2d2d;background:#151515;color:#555;font-weight:900;letter-spacing:1.4px;text-transform:uppercase}.crawford.active{background:#4b2d063d;border-color:#c47d00;color:var(--amber)}.crawford.post{background:#082f493d;border-color:#2563eb;color:#6bb5ff}
+.bottom-controls{display:flex;flex-direction:column;gap:9px}.btn{border:1px solid #505050;border-radius:9px;padding:14px 10px;font-weight:800;letter-spacing:.5px;color:#eee;background:linear-gradient(#414141,#2e2e2e)}.btn:active{transform:translateY(1px)}.btn.reset{background:linear-gradient(#a0000c,#760008);border-color:#cf0011}.btn.secondary{background:#232323}.btn.amber{background:#2c2016;border-color:#d97706;color:#f7b500}
+.overlay{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}.hidden{display:none!important}.modal{width:min(960px,96vw);max-height:92dvh;overflow:hidden;background:#1a1a1a;border:2px solid #333;border-radius:16px;box-shadow:0 18px 60px #000b;display:flex;flex-direction:column}.modal-head{padding:16px 18px;background:#262626;border-bottom:1px solid #383838;display:flex;align-items:center;justify-content:space-between;gap:16px}.modal-title{font-weight:900;letter-spacing:.6px;text-transform:uppercase;font-size:20px}.close{border:0;border-radius:8px;background:#343434;color:#aaa;padding:9px 12px;font-weight:800}.modal-body{padding:20px;overflow:auto}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.statbox{background:#222;border:1px solid #343434;border-radius:10px;padding:14px;text-align:center}.statlabel{font-size:13px;color:#9ca3af;font-weight:800;letter-spacing:.7px;text-transform:uppercase}.statvalue{font-size:27px;font-weight:900;margin-top:4px}.leader{color:#ffc400}.deciding{color:var(--blue)}
+.stats-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid #343434;border-radius:10px;overflow:hidden}.stats-table th,.stats-table td{padding:13px 16px;border-bottom:1px solid #303030}.stats-table tr:last-child td{border-bottom:0}.stats-table th{background:#222;color:#a8b0bf;text-transform:uppercase;font-size:13px;letter-spacing:.6px}.stats-table th:first-child,.stats-table td:first-child{text-align:left}.stats-table th:not(:first-child),.stats-table td:not(:first-child){text-align:center}.wins{color:var(--green);font-weight:900}.history-title{margin:22px 0 8px;color:#a8b0bf;text-transform:uppercase;font-size:13px;letter-spacing:.7px;font-weight:900}.history{border-top:1px solid #282828}.history-row{display:grid;grid-template-columns:1fr auto;gap:15px;padding:11px 3px;border-bottom:1px solid #242424;color:#aeb4bf}.history-score{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#e5e7eb;font-weight:800;text-align:right}.empty{text-align:center;color:#666;font-style:italic;padding:20px}.modal-foot{display:flex;gap:10px;flex-wrap:wrap;padding:14px 18px;background:#151515;border-top:1px solid #303030}.modal-foot .btn{padding:10px 13px;font-size:13px}
+.complete{width:min(520px,92vw);background:#1c1c1c;border:2px solid #3b3b3b;border-radius:16px;padding:24px;text-align:center}.complete h2{margin:0 0 10px;font-size:28px}.complete .result{font-size:46px;font-weight:900;margin:10px 0;color:var(--amber)}.complete p{color:#aaa;margin:0 0 18px}.complete-actions{display:flex;gap:10px}.complete-actions button{flex:1}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;border:1px solid #444;color:#eee;padding:10px 16px;border-radius:999px;z-index:80;box-shadow:0 8px 25px #0008;font-weight:700}
+.rotate{display:none}
+@media(max-width:900px){.board{grid-template-columns:minmax(0,1fr) 180px minmax(0,1fr);gap:8px;padding:8px;border-width:5px;border-radius:15px}.player-head{padding:6px}.player-select{height:36px;font-size:14px}.center{gap:7px}.control-card{padding:7px}.label{font-size:10px;margin-bottom:3px}.mini{width:31px;height:31px;font-size:20px}.target{font-size:37px}.crawford{padding:11px 5px;font-size:12px}.btn{padding:9px 6px;font-size:12px}.away{padding:5px;font-size:13px}.score{font-size:clamp(90px,28vh,220px)}}
+@media(orientation:portrait) and (max-width:700px){#app{display:none}.rotate{display:flex;position:fixed;inset:0;align-items:center;justify-content:center;text-align:center;padding:30px;background:var(--bg);color:#eee;font-weight:800;font-size:20px}.rotate small{display:block;color:#9ca3af;font-weight:600;font-size:14px;margin-top:8px}}
+</style>
+</head>
+<body>
+<div class="rotate"><div>↻ Rotate your phone to landscape<small>This scoreboard is designed to fill a phone screen horizontally.</small></div></div>
+<div id="app">
+  <main class="board">
+    <section class="player">
+      <div class="player-head"><select id="p1-select" class="player-select" aria-label="Player one"></select></div>
+      <div class="score-area"><div class="tap plus" data-player="1" data-delta="1"></div><div class="tap minus" data-player="1" data-delta="-1"></div><div id="p1-score" class="score">0</div></div>
+      <div id="p1-away" class="away">(11 Away)</div>
+    </section>
+    <section class="center">
+      <div class="control-card"><div class="label">Match To</div><div class="target-row"><button id="target-minus" class="mini minus">−</button><div id="target" class="target">11</div><button id="target-plus" class="mini plus">+</button></div></div>
+      <div class="crawford-wrap"><div id="crawford" class="crawford">Normal</div></div>
+      <div class="bottom-controls"><button id="stats-btn" class="btn">SHOW STATS</button><button id="reset-btn" class="btn reset">RESET</button></div>
+    </section>
+    <section class="player">
+      <div class="player-head"><select id="p2-select" class="player-select" aria-label="Player two"></select></div>
+      <div class="score-area"><div class="tap plus" data-player="2" data-delta="1"></div><div class="tap minus" data-player="2" data-delta="-1"></div><div id="p2-score" class="score">0</div></div>
+      <div id="p2-away" class="away">(11 Away)</div>
+    </section>
+  </main>
+</div>
+
+<div id="stats-overlay" class="overlay hidden">
+  <section class="modal">
+    <div class="modal-head"><div id="stats-title" class="modal-title">Historical Head-to-Head</div><button id="close-stats" class="close">✕ CLOSE</button></div>
+    <div class="modal-body">
+      <div class="summary"><div class="statbox"><div class="statlabel">Total Matches</div><div id="stat-total" class="statvalue">0</div></div><div class="statbox"><div class="statlabel">Current Leader</div><div id="stat-leader" class="statvalue leader">—</div></div><div class="statbox"><div class="statlabel">Deciding Games</div><div id="stat-deciding" class="statvalue deciding">0</div></div></div>
+      <table class="stats-table"><thead><tr><th>Performance Metric</th><th id="th-p1">P1</th><th id="th-p2">P2</th></tr></thead><tbody id="stats-body"></tbody></table>
+      <div class="history-title">Recent Matches History</div><div id="history" class="history"></div>
+    </div>
+    <div class="modal-foot"><button id="export-btn" class="btn secondary">EXPORT BACKUP</button><button id="import-btn" class="btn secondary">IMPORT BACKUP</button><input id="import-file" type="file" accept="application/json" class="hidden"><button id="clear-history-btn" class="btn secondary">CLEAR ALL HISTORY</button></div>
+  </section>
+</div>
+
+<div id="complete-overlay" class="overlay hidden"><section class="complete"><h2>Match complete</h2><div id="complete-result" class="result"></div><p id="complete-text"></p><div class="complete-actions"><button id="continue-btn" class="btn secondary">CORRECT SCORE</button><button id="save-btn" class="btn amber">SAVE MATCH</button></div></section></div>
+<div id="toast" class="toast hidden"></div>
+<script>
+(() => {
+const KEY='backgammonScore.v2';
+const NEW='NEW PLAYER…';
+const defaults={version:2,p1Score:0,p2Score:0,matchLimit:11,selectedP1:'MILES',selectedP2:'DANNY',players:['MILES','DANNY','ALISTAIR'],history:[],crawfordUsed:false,crawfordActive:false,completionShown:false};
+let state=load();
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));return x?{...defaults,...x,players:Array.isArray(x.players)?x.players:defaults.players,history:Array.isArray(x.history)?x.history:[]}:{...defaults};}catch{return {...defaults}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+const $=id=>document.getElementById(id);
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderPlayers(){['p1-select','p2-select'].forEach((id,i)=>{const el=$(id),sel=i?state.selectedP2:state.selectedP1;el.innerHTML='';[...state.players,NEW].forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;o.selected=name===sel;el.appendChild(o)})})}
+function setCrawfordLabel(){const el=$('crawford');el.className='crawford';const oneAway=(state.matchLimit-state.p1Score===1)||(state.matchLimit-state.p2Score===1);if(state.crawfordActive){el.textContent='Crawford';el.classList.add('active')}else if(state.crawfordUsed&&oneAway){el.textContent='Post Crawford';el.classList.add('post')}else{el.textContent='Normal'}}
+function render(){ $('p1-score').textContent=state.p1Score;$('p2-score').textContent=state.p2Score;$('target').textContent=state.matchLimit;$('p1-away').textContent=`(${Math.max(0,state.matchLimit-state.p1Score)} Away)`;$('p2-away').textContent=`(${Math.max(0,state.matchLimit-state.p2Score)} Away)`;setCrawfordLabel();save() }
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),1800)}
+function updateCrawfordBeforeScore(){if(state.crawfordActive){state.crawfordActive=false;state.crawfordUsed=true}}
+function updateCrawfordAfterScore(){const oneAway=(state.matchLimit-state.p1Score===1)||(state.matchLimit-state.p2Score===1);if(oneAway&&!state.crawfordUsed&&!state.crawfordActive)state.crawfordActive=true;if(!oneAway&&!state.crawfordUsed)state.crawfordActive=false}
+function modifyScore(player,delta){if($('complete-overlay').classList.contains('hidden')===false)return;updateCrawfordBeforeScore();const k=player===1?'p1Score':'p2Score';state[k]=Math.max(0,Math.min(state.matchLimit,state[k]+delta));updateCrawfordAfterScore();state.completionShown=false;render();checkComplete()}
+function checkComplete(){if((state.p1Score===state.matchLimit||state.p2Score===state.matchLimit)&&!state.completionShown){state.completionShown=true;save();const winner=state.p1Score===state.matchLimit?state.selectedP1:state.selectedP2;$('complete-result').textContent=`${winner} WINS`;$('complete-text').textContent=`${state.selectedP1} ${state.p1Score} – ${state.p2Score} ${state.selectedP2} · Match to ${state.matchLimit}`;$('complete-overlay').classList.remove('hidden')}}
+function resetBoard(ask=true){if(ask&&(state.p1Score||state.p2Score)&&!confirm('Reset the current score without saving it?'))return;state.p1Score=0;state.p2Score=0;state.crawfordUsed=false;state.crawfordActive=false;state.completionShown=false;$('complete-overlay').classList.add('hidden');render()}
+function localDate(){return new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function saveCompletedMatch(){if(!(state.p1Score===state.matchLimit||state.p2Score===state.matchLimit))return;state.history.unshift({id:Date.now(),p1:state.selectedP1,p2:state.selectedP2,p1Score:state.p1Score,p2Score:state.p2Score,limit:state.matchLimit,date:localDate(),timestamp:new Date().toISOString()});save();$('complete-overlay').classList.add('hidden');toast('Match saved');resetBoard(false)}
+function changePlayer(which){const el=$(which===1?'p1-select':'p2-select');let val=el.value;if(val===NEW){const raw=prompt('Enter new player name:');if(raw===null){renderPlayers();return}val=raw.trim().toUpperCase();if(!val){renderPlayers();return}if(state.players.includes(val)){alert('That player already exists.');renderPlayers();return}state.players.push(val)}const other=which===1?state.selectedP2:state.selectedP1;if(val===other){alert('Please choose two different players.');renderPlayers();return}if(which===1)state.selectedP1=val;else state.selectedP2=val;renderPlayers();save()}
+function adjustTarget(d){if(state.p1Score||state.p2Score){if(!confirm('Changing the match length will keep the current score. Continue?'))return}state.matchLimit=Math.max(1,state.matchLimit+d);state.p1Score=Math.min(state.p1Score,state.matchLimit);state.p2Score=Math.min(state.p2Score,state.matchLimit);state.crawfordUsed=false;state.crawfordActive=false;state.completionShown=false;render();checkComplete()}
+function stats(){const a=state.selectedP1,b=state.selectedP2;const subset=state.history.filter(m=>(m.p1===a&&m.p2===b)||(m.p1===b&&m.p2===a));let aw=0,bw=0,at=0,bt=0,amax=0,bmax=0,dec=0;subset.forEach(m=>{const normal=m.p1===a,as=normal?m.p1Score:m.p2Score,bs=normal?m.p2Score:m.p1Score;if(as>bs)aw++;else if(bs>as)bw++;at+=as;bt+=bs;amax=Math.max(amax,as);bmax=Math.max(bmax,bs);if(Math.abs(as-bs)===1&&(as===m.limit||bs===m.limit))dec++});const total=subset.length;$('stats-title').textContent=`HISTORICAL HEAD-TO-HEAD: ${a} VS ${b}`;$('stat-total').textContent=total;$('stat-leader').textContent=aw>bw?a:bw>aw?b:'TIED';$('stat-deciding').textContent=dec;$('th-p1').textContent=a;$('th-p2').textContent=b;$('stats-body').innerHTML=`<tr><td>Matches Won</td><td class="wins">${aw} (${total?(aw/total*100).toFixed(1):'0.0'}%)</td><td class="wins">${bw} (${total?(bw/total*100).toFixed(1):'0.0'}%)</td></tr><tr><td>Total Points Scored</td><td>${at} Pts</td><td>${bt} Pts</td></tr><tr><td>Avg. Points/Match</td><td>${total?(at/total).toFixed(1):'0.0'}</td><td>${total?(bt/total).toFixed(1):'0.0'}</td></tr><tr><td>Peak Record Score</td><td>${amax}</td><td>${bmax}</td></tr>`;const h=$('history');if(!subset.length)h.innerHTML='<div class="empty">No recorded matches between this pair yet.</div>';else h.innerHTML=subset.slice(0,50).map(m=>`<div class="history-row"><span>📅 ${esc(m.date)} · Match to ${m.limit}</span><span class="history-score">${esc(m.p1)} (${m.p1Score}) vs ${esc(m.p2)} (${m.p2Score})</span></div>`).join('');$('stats-overlay').classList.remove('hidden')}
+function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`backgammon-score-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
+function importBackup(file){const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||!Array.isArray(x.players)||!Array.isArray(x.history))throw 0;if(!confirm('Replace the current scoreboard data with this backup?'))return;state={...defaults,...x};renderPlayers();render();$('stats-overlay').classList.add('hidden');toast('Backup restored')}catch{alert('That file is not a valid Backgammon Score backup.')}};r.readAsText(file)}
+function clearHistory(){if(!state.history.length)return;if(confirm('Delete ALL saved match history? This cannot be undone.')){state.history=[];save();stats();toast('History cleared')}}
+document.querySelectorAll('.tap').forEach(x=>x.addEventListener('click',()=>modifyScore(Number(x.dataset.player),Number(x.dataset.delta))));$('p1-select').addEventListener('change',()=>changePlayer(1));$('p2-select').addEventListener('change',()=>changePlayer(2));$('target-minus').onclick=()=>adjustTarget(-1);$('target-plus').onclick=()=>adjustTarget(1);$('reset-btn').onclick=()=>resetBoard(true);$('stats-btn').onclick=stats;$('close-stats').onclick=()=>$('stats-overlay').classList.add('hidden');$('continue-btn').onclick=()=>{$('complete-overlay').classList.add('hidden');state.completionShown=false;save()};$('save-btn').onclick=saveCompletedMatch;$('stats-overlay').addEventListener('click',e=>{if(e.target===$('stats-overlay'))$('stats-overlay').classList.add('hidden')});$('export-btn').onclick=exportBackup;$('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value=''};$('clear-history-btn').onclick=clearHistory;
+renderPlayers();render();checkComplete();
+if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
