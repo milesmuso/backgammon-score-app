@@ -1,4 +1,4 @@
-const CACHE='backgammon-score-v4.8';
+const CACHE='backgammon-score-v4.9';
 const STATIC=['./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install', event => {
