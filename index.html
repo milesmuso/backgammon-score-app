@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
 <title>Backgammon Score</title>
-<meta name="application-version" content="3.2.1">
+<meta name="application-version" content="4.6">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#111827;--frame:#292929;--panel:#1d1d1d;--line:#3a3a3a;--card1:#e7e7e7;--card2:#c8c8c8;--text:#f3f4f6;--muted:#9ca3af;--amber:#f5b000;--green:#00d6a3;--red:#ff4963;--blue:#4da3ff}
@@ -100,6 +100,71 @@ linear-gradient(180deg,rgba(255,255,255,.05) 0%,transparent 42%,rgba(0,0,0,.07) 
   .btn{padding:8px 3px;font-size:9px;letter-spacing:0}
 }
 
+
+/* v4 stats + deliberate touch protection */
+.tap{touch-action:none}
+.tap.touch-armed{background:rgba(255,255,255,.045)}
+
+.stats-modal{width:min(1120px,97vw);max-height:94dvh;background:linear-gradient(180deg,#071625,#06111d);border:1px solid #1686c7;box-shadow:0 18px 60px #000c,inset 0 1px 0 #ffffff0b}
+.stats-modal .modal-head{background:linear-gradient(#0b2741,#071a2b);border-bottom:1px solid #1a6d9f;padding:14px 18px}
+.stats-modal .modal-title{text-transform:none;font-size:22px;text-align:center;flex:1;color:#e8edf3}
+.stats-modal .close{font-size:20px;background:#0b2236;border:1px solid #5f8caf;color:#bdd7ee;padding:7px 11px}
+.stats-summary{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #258ac7;border-radius:12px;overflow:hidden;background:linear-gradient(#0b2943,#061827);margin-bottom:14px}
+.stats-summary .sum-cell{padding:12px;text-align:center;position:relative}
+.stats-summary .sum-cell+ .sum-cell{border-left:1px solid #255776}
+.sum-name{font-size:18px;font-weight:800;color:#9fd4ff;text-transform:capitalize}
+.sum-label{font-size:17px;color:#d5dce5}
+.sum-value{font-size:46px;line-height:1.05;font-weight:900;color:#ffc928;margin-top:2px}
+.sum-value.matches{color:#f1f3f5}
+.sum-since{font-size:13px;color:#c4cbd4;margin-top:3px}
+.hist-box{border:1px solid #258ac7;border-radius:12px;overflow:hidden;background:#071827}
+.hist-title{font-size:17px;font-weight:900;letter-spacing:.7px;padding:9px 14px;background:linear-gradient(#0c2b46,#081d30);color:#b8dcfb;text-transform:uppercase}
+.new-stats-table{width:100%;border-collapse:collapse}.new-stats-table th,.new-stats-table td{padding:11px 14px;border-top:1px solid #21445d}.new-stats-table th{background:#0a2237;color:#b9d9f2;font-size:13px}.new-stats-table th:first-child,.new-stats-table td:first-child{text-align:left}.new-stats-table th:not(:first-child),.new-stats-table td:not(:first-child){text-align:center}.new-stats-table td{color:#eef2f6}.new-stats-table td:not(:first-child){font-weight:800}
+.stats-actions{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;padding:14px 18px;background:#07131f;border-top:1px solid #173c55}.stats-actions .btn{width:100%;padding:11px 8px}.stats-actions .primary{background:linear-gradient(#0f85ff,#0664df);border-color:#32a2ff;color:white}
+
+.form-box{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:0;border:1px solid #258ac7;border-radius:12px;overflow:hidden;background:linear-gradient(#0a2943,#061827);margin-bottom:12px}.form-col{padding:10px 13px;text-align:center}.form-col+.form-col{border-left:1px solid #245678}.form-heading{grid-column:1/-1;padding:7px 13px 0;color:#b9dcf8;font-weight:900;letter-spacing:.6px;font-size:15px}.form-player{font-size:21px;font-weight:900}.miles-color{color:#5fc1ff!important}.danny-color{color:#ffc928!important}.form-value{font-size:36px;line-height:1.05;font-weight:900;margin-top:1px}.form-sub{font-size:12px;color:#d1d7df;margin-top:4px}.pi-explain{text-align:left;font-size:12px;line-height:1.4;color:#d1dae5;background:#061525;border:1px solid #245b80;border-radius:10px;padding:9px 11px}
+.matches-wrap{border:1px solid #258ac7;border-radius:12px;overflow:auto;max-height:55dvh;background:#061522}.matches-table{width:100%;border-collapse:collapse;min-width:850px}.matches-table th,.matches-table td{padding:8px 9px;border-right:1px solid #173f59;border-bottom:1px solid #173f59;text-align:center;white-space:nowrap}.matches-table th{position:sticky;top:0;z-index:4;background:#0a2941;color:#b8d9f2;font-size:12px}.matches-table td{font-size:13px;color:#e8edf2}.winner-miles{color:#5fc1ff!important;font-weight:900}.winner-danny{color:#ffc928!important;font-weight:900}.pi-miles{color:#5fc1ff!important;font-weight:900}.pi-danny{color:#ffc928!important;font-weight:900}
+.pi-cell{min-width:330px}
+.pi-track{position:relative;height:24px;border-radius:999px;background:#102b3f;margin:0 auto;width:94%;overflow:visible;box-shadow:inset 0 1px 3px #0008}
+.pi-axis{position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:#d7dde3;opacity:.9;z-index:5}
+
+/* One bar, always anchored to the centre axis.
+   It extends toward whichever player had the stronger Performance Index. */
+.pi-band{position:absolute;top:3px;height:18px;z-index:2}
+.pi-band.miles{
+  right:50%;
+  border-radius:999px 0 0 999px;
+  background:linear-gradient(90deg,#3aaaf1 0%,#72c8fb 52%,#b7dcf2 100%);
+  box-shadow:0 0 8px rgba(82,188,250,.16)
+}
+.pi-band.danny{
+  left:50%;
+  border-radius:0 999px 999px 0;
+  background:linear-gradient(90deg,#f2dfaa 0%,#ffd24a 48%,#ffc21f 100%);
+  box-shadow:0 0 8px rgba(255,205,55,.14)
+}
+.pi-dot{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 4px #000a;z-index:6}
+.pi-dot.miles{background:#5fc1ff;border:1px solid #9bdcff}
+.pi-dot.danny{background:#ffc928;border:1px solid #ffe47c}
+.pi-baseline{font-size:11px;color:#7e93a5;font-style:italic}
+.pi-labels{display:flex;justify-content:space-between;padding:0 4%;font-size:10px;font-weight:800;margin-bottom:5px}.pi-labels .left{color:#5fc1ff}.pi-labels .right{color:#ffc928}
+@media(max-width:900px){.stats-modal .modal-body{padding:10px}.stats-modal .modal-head{padding:9px 12px}.stats-modal .modal-title{font-size:16px}.stats-summary .sum-cell{padding:7px}.sum-name,.sum-label{font-size:13px}.sum-value{font-size:31px}.sum-since{font-size:10px}.hist-title{font-size:12px;padding:6px 9px}.new-stats-table th,.new-stats-table td{padding:7px 9px;font-size:11px}.stats-actions{padding:9px 11px;gap:7px}.stats-actions .btn{font-size:10px;padding:8px 5px}.form-heading{font-size:11px}.form-player{font-size:16px}.form-value{font-size:27px}.form-sub,.pi-explain{font-size:9px}.matches-wrap{max-height:50dvh}.matches-table th,.matches-table td{padding:5px 6px;font-size:10px}.pi-cell{min-width:260px}.pi-track{height:14px}.pi-fill{height:10px}.pi-dot{width:14px;height:14px}}
+
+
+.pi-head-sub{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:5px;
+  padding:0 7%;
+  font-size:11px;
+  font-weight:800;
+  text-transform:none;
+  letter-spacing:0
+}
+.pi-head-sub span:first-child{color:#5fc1ff}
+.pi-head-sub span:last-child{color:#ffc928}
+
 </style>
 
 <style id="v3-visual-override">
@@ -192,6 +257,8 @@ linear-gradient(180deg,rgba(255,255,255,.05) 0%,transparent 42%,rgba(0,0,0,.07) 
 
 
 
+
+
 </head>
 <body>
 <div id="app">
@@ -215,14 +282,47 @@ linear-gradient(180deg,rgba(255,255,255,.05) 0%,transparent 42%,rgba(0,0,0,.07) 
 </div>
 
 <div id="stats-overlay" class="overlay hidden">
-  <section class="modal">
-    <div class="modal-head"><div id="stats-title" class="modal-title">Historical Head-to-Head</div><button id="close-stats" class="close">✕ CLOSE</button></div>
+  <section class="modal stats-modal">
+    <div class="modal-head"><div id="stats-title" class="modal-title">Overall Stats</div><button id="close-stats" class="close">✕</button></div>
     <div class="modal-body">
-      <div class="summary"><div class="statbox"><div class="statlabel">Total Matches</div><div id="stat-total" class="statvalue">0</div></div><div class="statbox"><div class="statlabel">Current Leader</div><div id="stat-leader" class="statvalue leader">—</div></div><div class="statbox"><div class="statlabel">Deciding Games</div><div id="stat-deciding" class="statvalue deciding">0</div></div></div>
-      <table class="stats-table"><thead><tr><th>Performance Metric</th><th id="th-p1">P1</th><th id="th-p2">P2</th></tr></thead><tbody id="stats-body"></tbody></table>
-      <div class="history-title">Recent Matches History</div><div id="history" class="history"></div>
+      <div class="stats-summary">
+        <div class="sum-cell"><div id="sum-p1-name" class="sum-name">Miles</div><div id="sum-p1-wins" class="sum-value">0</div></div>
+        <div class="sum-cell"><div class="sum-label">Matches</div><div id="sum-total" class="sum-value matches">0</div><div id="sum-since" class="sum-since">Since —</div></div>
+        <div class="sum-cell"><div id="sum-p2-name" class="sum-name">Danny</div><div id="sum-p2-wins" class="sum-value">0</div></div>
+      </div>
+      <div class="hist-box">
+        <div class="hist-title">Historical</div>
+        <table class="new-stats-table"><thead><tr><th>Performance Metric</th><th id="hist-p1">Miles</th><th id="hist-p2">Danny</th></tr></thead><tbody id="stats-body"></tbody></table>
+      </div>
     </div>
-    <div class="modal-foot"><button id="export-btn" class="btn secondary">EXPORT BACKUP</button><button id="import-btn" class="btn secondary">IMPORT BACKUP</button><input id="import-file" type="file" accept="application/json" class="hidden"><button id="clear-history-btn" class="btn secondary">CLEAR ALL HISTORY</button></div>
+    <div class="stats-actions">
+      <button id="import-btn" class="btn secondary">IMPORT STATS</button>
+      <button id="show-matches-btn" class="btn primary">SHOW ALL MATCHES</button>
+      <button id="export-btn" class="btn secondary">EXPORT STATS</button>
+      <input id="import-file" type="file" accept="application/json" class="hidden">
+    </div>
+  </section>
+</div>
+
+<div id="matches-overlay" class="overlay hidden">
+  <section class="modal stats-modal">
+    <div class="modal-head"><div id="matches-title" class="modal-title">All Matches</div><button id="close-matches" class="close">✕</button></div>
+    <div class="modal-body">
+      <div class="form-box">
+        <div class="form-heading">LAST 5 MATCHES – AVERAGE PERFORMANCE INDEX</div>
+        <div class="form-col"><div id="form-p1-name" class="form-player miles-color">Miles</div><div id="form-p1" class="form-value miles-color">—</div><div id="form-p1-sub" class="form-sub">vs historical average</div></div>
+        <div class="form-col"><div id="form-p2-name" class="form-player danny-color">Danny</div><div id="form-p2" class="form-value danny-color">—</div><div id="form-p2-sub" class="form-sub">vs historical average</div></div>
+        <div class="form-col"><div class="pi-explain">The Performance Index shows how much better or worse each player scored in a match compared with that player's own historical average score against the other player. Positive values mean better-than-average; negative values mean worse-than-average.</div></div>
+      </div>
+      <div class="matches-wrap">
+        <table class="matches-table"><thead><tr><th>#</th><th>Date</th><th>Winner</th><th>Score</th><th><div>Performance Index</div><div class="pi-head-sub"><span>Miles better</span><span>Danny better</span></div></th><th id="pi-p1-head">Miles PI (%)</th><th id="pi-p2-head">Danny PI (%)</th></tr></thead><tbody id="matches-body"></tbody></table>
+      </div>
+    </div>
+    <div class="stats-actions">
+      <button id="import-btn-2" class="btn secondary">IMPORT STATS</button>
+      <button id="overall-stats-btn" class="btn primary">OVERALL STATS</button>
+      <button id="export-btn-2" class="btn secondary">EXPORT STATS</button>
+    </div>
   </section>
 </div>
 
@@ -251,10 +351,76 @@ function localDate(){return new Intl.DateTimeFormat(undefined,{year:'numeric',mo
 function saveCompletedMatch(){if(!(state.p1Score===state.matchLimit||state.p2Score===state.matchLimit))return;state.history.unshift({id:Date.now(),p1:state.selectedP1,p2:state.selectedP2,p1Score:state.p1Score,p2Score:state.p2Score,limit:state.matchLimit,date:localDate(),timestamp:new Date().toISOString()});save();$('complete-overlay').classList.add('hidden');toast('Match saved');resetBoard(false)}
 function changePlayer(which){const el=$(which===1?'p1-select':'p2-select');let val=el.value;if(val===NEW){const raw=prompt('Enter new player name:');if(raw===null){renderPlayers();return}val=raw.trim().toUpperCase();if(!val){renderPlayers();return}if(state.players.includes(val)){alert('That player already exists.');renderPlayers();return}state.players.push(val)}const other=which===1?state.selectedP2:state.selectedP1;if(val===other){alert('Please choose two different players.');renderPlayers();return}if(which===1)state.selectedP1=val;else state.selectedP2=val;renderPlayers();save()}
 function adjustTarget(d){if(state.p1Score||state.p2Score){if(!confirm('Changing the match length will keep the current score. Continue?'))return}state.matchLimit=Math.max(1,state.matchLimit+d);state.p1Score=Math.min(state.p1Score,state.matchLimit);state.p2Score=Math.min(state.p2Score,state.matchLimit);state.crawfordUsed=false;state.crawfordActive=false;state.completionShown=false;render();checkComplete()}
-function stats(){const a=state.selectedP1,b=state.selectedP2;const subset=state.history.filter(m=>(m.p1===a&&m.p2===b)||(m.p1===b&&m.p2===a));let aw=0,bw=0,at=0,bt=0,amax=0,bmax=0,dec=0;subset.forEach(m=>{const normal=m.p1===a,as=normal?m.p1Score:m.p2Score,bs=normal?m.p2Score:m.p1Score;if(as>bs)aw++;else if(bs>as)bw++;at+=as;bt+=bs;amax=Math.max(amax,as);bmax=Math.max(bmax,bs);if(Math.abs(as-bs)===1&&(as===m.limit||bs===m.limit))dec++});const total=subset.length;$('stats-title').textContent=`HISTORICAL HEAD-TO-HEAD: ${a} VS ${b}`;$('stat-total').textContent=total;$('stat-leader').textContent=aw>bw?a:bw>aw?b:'TIED';$('stat-deciding').textContent=dec;$('th-p1').textContent=a;$('th-p2').textContent=b;$('stats-body').innerHTML=`<tr><td>Matches Won</td><td class="wins">${aw} (${total?(aw/total*100).toFixed(1):'0.0'}%)</td><td class="wins">${bw} (${total?(bw/total*100).toFixed(1):'0.0'}%)</td></tr><tr><td>Total Points Scored</td><td>${at} Pts</td><td>${bt} Pts</td></tr><tr><td>Avg. Points/Match</td><td>${total?(at/total).toFixed(1):'0.0'}</td><td>${total?(bt/total).toFixed(1):'0.0'}</td></tr><tr><td>Peak Record Score</td><td>${amax}</td><td>${bmax}</td></tr>`;const h=$('history');if(!subset.length)h.innerHTML='<div class="empty">No recorded matches between this pair yet.</div>';else h.innerHTML=subset.slice(0,50).map(m=>`<div class="history-row"><span>📅 ${esc(m.date)} · Match to ${m.limit}</span><span class="history-score">${esc(m.p1)} (${m.p1Score}) vs ${esc(m.p2)} (${m.p2Score})</span></div>`).join('');$('stats-overlay').classList.remove('hidden')}
+function pairHistory(a,b){return state.history.filter(m=>(m.p1===a&&m.p2===b)||(m.p1===b&&m.p2===a))}
+function scoreFor(m,name){return m.p1===name?m.p1Score:m.p2Score}
+function opponentScoreFor(m,name){return m.p1===name?m.p2Score:m.p1Score}
+function chronological(list){return [...list].sort((x,y)=>{const tx=x.timestamp?Date.parse(x.timestamp):Number(x.id)||0;const ty=y.timestamp?Date.parse(y.timestamp):Number(y.id)||0;return tx-ty})}
+function niceName(s){return String(s||'').toLowerCase().replace(/(^|[\s'-])([a-z])/g,(m,p,c)=>p+c.toUpperCase())}
+function longDate(m){try{if(m.timestamp)return new Intl.DateTimeFormat(undefined,{day:'2-digit',month:'short',year:'numeric'}).format(new Date(m.timestamp))}catch{}return m.date||'—'}
+function pct(v){return v==null||!Number.isFinite(v)?'—':`${v>0?'+':''}${Math.round(v)}%`}
+function unsignedPct(v){return v==null||!Number.isFinite(v)?'—':`${Math.round(Math.abs(v))}%`}
+function computePIRecords(a,b){
+  const list=chronological(pairHistory(a,b));
+  let aTotal=0,bTotal=0,count=0;
+  return list.map((m,idx)=>{
+    const as=scoreFor(m,a),bs=scoreFor(m,b);
+    const aAvg=count?aTotal/count:null,bAvg=count?bTotal/count:null;
+    const aPI=(aAvg&&aAvg>0)?((as-aAvg)/aAvg*100):null;
+    const bPI=(bAvg&&bAvg>0)?((bs-bAvg)/bAvg*100):null;
+    const comparative=(aPI==null||bPI==null)?null:(bPI-aPI)/2; // + = b better, - = a better
+    const rec={m,idx:idx+1,as,bs,aPI,bPI,comparative};
+    aTotal+=as;bTotal+=bs;count++;
+    return rec;
+  });
+}
+function compressedBar(value){if(value==null||!Number.isFinite(value))return 0;return 82*Math.tanh(value/60)}
+function bestWin(list,name){let best=null;list.forEach(m=>{const s=scoreFor(m,name),o=opponentScoreFor(m,name);if(s>o){const margin=s-o;if(!best||margin>best.margin)best={margin,score:`${s} - ${o}`}}});return best?best.score:'—'}
+function stats(){
+  const a=state.selectedP1,b=state.selectedP2,subset=pairHistory(a,b),ordered=chronological(subset);
+  let aw=0,bw=0,at=0,bt=0;
+  subset.forEach(m=>{const as=scoreFor(m,a),bs=scoreFor(m,b);if(as>bs)aw++;else if(bs>as)bw++;at+=as;bt+=bs});
+  const total=subset.length;
+  $('stats-title').textContent=`${a} v ${b} Overall Stats`;
+  $('sum-p1-name').textContent=niceName(a);$('sum-p2-name').textContent=niceName(b);$('sum-p1-wins').textContent=aw;$('sum-p2-wins').textContent=bw;$('sum-total').textContent=total;$('sum-since').textContent=total?`Since ${longDate(ordered[0])}`:'Since —';
+  $('hist-p1').textContent=niceName(a);$('hist-p2').textContent=niceName(b);
+  const apct=total?Math.round(aw/total*100):0,bpct=total?Math.round(bw/total*100):0;
+  $('stats-body').innerHTML=`<tr><td>Percentage of Matches won</td><td>${apct}%</td><td>${bpct}%</td></tr><tr><td>Average Score</td><td>${total?(at/total).toFixed(1):'0.0'}</td><td>${total?(bt/total).toFixed(1):'0.0'}</td></tr><tr><td>Total Points Scored</td><td>${at}</td><td>${bt}</td></tr><tr><td>Best win</td><td>${bestWin(subset,a)}</td><td>${bestWin(subset,b)}</td></tr>`;
+  $('stats-overlay').classList.remove('hidden');
+}
+function showAllMatches(){
+  const a=state.selectedP1,b=state.selectedP2,records=computePIRecords(a,b),recent=[...records].reverse();
+  $('stats-overlay').classList.add('hidden');$('matches-overlay').classList.remove('hidden');$('matches-title').textContent=`${a} v ${b} - All Matches`;
+  $('form-p1-name').textContent=niceName(a);$('form-p2-name').textContent=niceName(b);$('pi-p1-head').textContent=`${niceName(a)} PI (%)`;$('pi-p2-head').textContent=`${niceName(b)} PI (%)`;
+  const last5=recent.slice(0,5),aVals=last5.map(r=>r.aPI).filter(v=>v!=null&&Number.isFinite(v)),bVals=last5.map(r=>r.bPI).filter(v=>v!=null&&Number.isFinite(v));
+  const aForm=aVals.length?aVals.reduce((x,y)=>x+y,0)/aVals.length:null,bForm=bVals.length?bVals.reduce((x,y)=>x+y,0)/bVals.length:null;
+  $('form-p1').textContent=pct(aForm);$('form-p2').textContent=pct(bForm);$('form-p1-sub').textContent=`vs ${niceName(a)}'s historical average against ${niceName(b)}`;$('form-p2-sub').textContent=`vs ${niceName(b)}'s historical average against ${niceName(a)}`;
+  const body=$('matches-body');
+  if(!records.length){body.innerHTML='<tr><td colspan="7" class="empty">No recorded matches between this pair yet.</td></tr>';return}
+  body.innerHTML=recent.map(r=>{
+    const winner=r.as>r.bs?a:b,winClass=winner===a?'winner-miles':'winner-danny';
+    let graphic='<div class="pi-baseline">Baseline</div>';
+    if(r.aPI!=null && r.bPI!=null){
+      // Compare the two players' individual Performance Index values.
+      // The graphic is a single bar that ALWAYS starts at the centre axis.
+      // Positive comparative advantage favours Miles (left, blue).
+      // Negative comparative advantage favours Danny (right, yellow).
+      const comparative=(r.aPI-r.bPI)/2;
+      const scaled=compressedBar(comparative);
+      const width=Math.max(1.5,Math.abs(scaled)/2);
+      const better=comparative>=0?'miles':'danny';
+      const dotPos=better==='miles' ? 50-width : 50+width;
+
+      graphic=`<div class="pi-track">
+        <span class="pi-band ${better}" style="width:${width}%;"></span>
+        <span class="pi-axis"></span>
+        <span class="pi-dot ${better}" style="left:${dotPos}%;"></span>
+      </div>`;
+    }
+    return `<tr><td>${r.idx}</td><td>${esc(longDate(r.m))}</td><td class="${winClass}">${esc(niceName(winner))}</td><td><strong>${r.as} - ${r.bs}</strong></td><td class="pi-cell">${graphic}</td><td class="pi-miles">${esc(pct(r.aPI))}</td><td class="pi-danny">${esc(pct(r.bPI))}</td></tr>`;
+  }).join('');
+}
 function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`backgammon-score-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
-function importBackup(file){const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||!Array.isArray(x.players)||!Array.isArray(x.history))throw 0;if(!confirm('Replace the current scoreboard data with this backup?'))return;state={...defaults,...x};renderPlayers();render();$('stats-overlay').classList.add('hidden');toast('Backup restored')}catch{alert('That file is not a valid Backgammon Score backup.')}};r.readAsText(file)}
-function clearHistory(){if(!state.history.length)return;if(confirm('Delete ALL saved match history? This cannot be undone.')){state.history=[];save();stats();toast('History cleared')}}
+function importBackup(file){const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!x||!Array.isArray(x.players)||!Array.isArray(x.history))throw 0;if(!confirm('Replace the current scoreboard data with this backup?'))return;state={...defaults,...x};renderPlayers();render();$('stats-overlay').classList.add('hidden');$('matches-overlay').classList.add('hidden');toast('Backup restored')}catch{alert('That file is not a valid Backgammon Score backup.')}};r.readAsText(file)}
 
 
 let wakeLock = null;
@@ -291,7 +457,19 @@ document.addEventListener('visibilitychange',()=>{
   }, {passive:true});
 });
 
-document.querySelectorAll('.tap').forEach(x=>x.addEventListener('click',()=>modifyScore(Number(x.dataset.player),Number(x.dataset.delta))));$('p1-select').addEventListener('change',()=>changePlayer(1));$('p2-select').addEventListener('change',()=>changePlayer(2));$('target-minus').onclick=()=>adjustTarget(-1);$('target-plus').onclick=()=>adjustTarget(1);$('reset-btn').onclick=()=>resetBoard(true);$('stats-btn').onclick=stats;$('close-stats').onclick=()=>$('stats-overlay').classList.add('hidden');$('continue-btn').onclick=()=>{$('complete-overlay').classList.add('hidden');state.completionShown=false;save()};$('save-btn').onclick=saveCompletedMatch;$('stats-overlay').addEventListener('click',e=>{if(e.target===$('stats-overlay'))$('stats-overlay').classList.add('hidden')});$('export-btn').onclick=exportBackup;$('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value=''};$('clear-history-btn').onclick=clearHistory;
+const TOUCH_MIN_MS=110, TOUCH_MAX_MS=800, TOUCH_MOVE_PX=12;
+document.querySelectorAll('.tap').forEach(el=>{
+  let active=null;
+  el.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='mouse' && e.button!==0)return;
+    active={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),cancelled:false};
+    el.setPointerCapture?.(e.pointerId);el.classList.add('touch-armed');
+  });
+  el.addEventListener('pointermove',e=>{if(!active||active.id!==e.pointerId)return;if(Math.hypot(e.clientX-active.x,e.clientY-active.y)>TOUCH_MOVE_PX){active.cancelled=true;el.classList.remove('touch-armed')}});
+  const finish=e=>{if(!active||active.id!==e.pointerId)return;const a=active;active=null;el.classList.remove('touch-armed');const dt=performance.now()-a.t;if(!a.cancelled&&dt>=TOUCH_MIN_MS&&dt<=TOUCH_MAX_MS)modifyScore(Number(el.dataset.player),Number(el.dataset.delta));};
+  el.addEventListener('pointerup',finish);el.addEventListener('pointercancel',()=>{active=null;el.classList.remove('touch-armed')});
+});
+$('p1-select').addEventListener('change',()=>changePlayer(1));$('p2-select').addEventListener('change',()=>changePlayer(2));$('target-minus').onclick=()=>adjustTarget(-1);$('target-plus').onclick=()=>adjustTarget(1);$('reset-btn').onclick=()=>resetBoard(true);$('stats-btn').onclick=stats;$('close-stats').onclick=()=>$('stats-overlay').classList.add('hidden');$('close-matches').onclick=()=>$('matches-overlay').classList.add('hidden');$('show-matches-btn').onclick=showAllMatches;$('overall-stats-btn').onclick=()=>{$('matches-overlay').classList.add('hidden');stats()};$('continue-btn').onclick=()=>{$('complete-overlay').classList.add('hidden');state.completionShown=false;save()};$('save-btn').onclick=saveCompletedMatch;$('stats-overlay').addEventListener('click',e=>{if(e.target===$('stats-overlay'))$('stats-overlay').classList.add('hidden')});$('matches-overlay').addEventListener('click',e=>{if(e.target===$('matches-overlay'))$('matches-overlay').classList.add('hidden')});$('export-btn').onclick=exportBackup;$('export-btn-2').onclick=exportBackup;$('import-btn').onclick=()=>$('import-file').click();$('import-btn-2').onclick=()=>$('import-file').click();$('import-file').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value=''};
 renderPlayers();render();checkComplete();
 acquireWakeLock();
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
