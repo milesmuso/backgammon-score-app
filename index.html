@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
 <title>Backgammon Score</title>
-<meta name="application-version" content="4.6">
+<meta name="application-version" content="4.8">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#111827;--frame:#292929;--panel:#1d1d1d;--line:#3a3a3a;--card1:#e7e7e7;--card2:#c8c8c8;--text:#f3f4f6;--muted:#9ca3af;--amber:#f5b000;--green:#00d6a3;--red:#ff4963;--blue:#4da3ff}
@@ -164,6 +164,32 @@ linear-gradient(180deg,rgba(255,255,255,.05) 0%,transparent 42%,rgba(0,0,0,.07) 
 }
 .pi-head-sub span:first-child{color:#5fc1ff}
 .pi-head-sub span:last-child{color:#ffc928}
+
+
+/* v4.7 stats header layering fix */
+.matches-wrap{position:relative}
+.matches-table{position:relative}
+.matches-table thead{position:relative;z-index:30}
+.matches-table th{
+  position:sticky;
+  top:0;
+  z-index:30 !important;
+  background:#0a2941 !important;
+  background-image:none !important;
+  opacity:1 !important;
+  isolation:isolate;
+  box-shadow:0 1px 0 #173f59;
+}
+.matches-table th::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:#0a2941;
+}
+.pi-band{z-index:2 !important}
+.pi-axis{z-index:3 !important}
+.pi-dot{z-index:4 !important}
 
 </style>
 
@@ -375,7 +401,21 @@ function computePIRecords(a,b){
 }
 function compressedBar(value){if(value==null||!Number.isFinite(value))return 0;return 82*Math.tanh(value/60)}
 function bestWin(list,name){let best=null;list.forEach(m=>{const s=scoreFor(m,name),o=opponentScoreFor(m,name);if(s>o){const margin=s-o;if(!best||margin>best.margin)best={margin,score:`${s} - ${o}`}}});return best?best.score:'—'}
+
+async function lockOrientation(mode){
+  try{
+    if(screen.orientation && screen.orientation.lock){
+      await screen.orientation.lock(mode);
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+function statsOrientation(){ lockOrientation('portrait-primary'); }
+function scoreboardOrientation(){ lockOrientation('landscape-primary'); }
+
 function stats(){
+  scoreboardOrientation();
   const a=state.selectedP1,b=state.selectedP2,subset=pairHistory(a,b),ordered=chronological(subset);
   let aw=0,bw=0,at=0,bt=0;
   subset.forEach(m=>{const as=scoreFor(m,a),bs=scoreFor(m,b);if(as>bs)aw++;else if(bs>as)bw++;at+=as;bt+=bs});
@@ -388,6 +428,7 @@ function stats(){
   $('stats-overlay').classList.remove('hidden');
 }
 function showAllMatches(){
+  statsOrientation();
   const a=state.selectedP1,b=state.selectedP2,records=computePIRecords(a,b),recent=[...records].reverse();
   $('stats-overlay').classList.add('hidden');$('matches-overlay').classList.remove('hidden');$('matches-title').textContent=`${a} v ${b} - All Matches`;
   $('form-p1-name').textContent=niceName(a);$('form-p2-name').textContent=niceName(b);$('pi-p1-head').textContent=`${niceName(a)} PI (%)`;$('pi-p2-head').textContent=`${niceName(b)} PI (%)`;
@@ -469,8 +510,9 @@ document.querySelectorAll('.tap').forEach(el=>{
   const finish=e=>{if(!active||active.id!==e.pointerId)return;const a=active;active=null;el.classList.remove('touch-armed');const dt=performance.now()-a.t;if(!a.cancelled&&dt>=TOUCH_MIN_MS&&dt<=TOUCH_MAX_MS)modifyScore(Number(el.dataset.player),Number(el.dataset.delta));};
   el.addEventListener('pointerup',finish);el.addEventListener('pointercancel',()=>{active=null;el.classList.remove('touch-armed')});
 });
-$('p1-select').addEventListener('change',()=>changePlayer(1));$('p2-select').addEventListener('change',()=>changePlayer(2));$('target-minus').onclick=()=>adjustTarget(-1);$('target-plus').onclick=()=>adjustTarget(1);$('reset-btn').onclick=()=>resetBoard(true);$('stats-btn').onclick=stats;$('close-stats').onclick=()=>$('stats-overlay').classList.add('hidden');$('close-matches').onclick=()=>$('matches-overlay').classList.add('hidden');$('show-matches-btn').onclick=showAllMatches;$('overall-stats-btn').onclick=()=>{$('matches-overlay').classList.add('hidden');stats()};$('continue-btn').onclick=()=>{$('complete-overlay').classList.add('hidden');state.completionShown=false;save()};$('save-btn').onclick=saveCompletedMatch;$('stats-overlay').addEventListener('click',e=>{if(e.target===$('stats-overlay'))$('stats-overlay').classList.add('hidden')});$('matches-overlay').addEventListener('click',e=>{if(e.target===$('matches-overlay'))$('matches-overlay').classList.add('hidden')});$('export-btn').onclick=exportBackup;$('export-btn-2').onclick=exportBackup;$('import-btn').onclick=()=>$('import-file').click();$('import-btn-2').onclick=()=>$('import-file').click();$('import-file').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value=''};
-renderPlayers();render();checkComplete();
+$('p1-select').addEventListener('change',()=>changePlayer(1));$('p2-select').addEventListener('change',()=>changePlayer(2));$('target-minus').onclick=()=>adjustTarget(-1);$('target-plus').onclick=()=>adjustTarget(1);$('reset-btn').onclick=()=>resetBoard(true);$('stats-btn').onclick=stats;$('close-stats').onclick=()=>{$('stats-overlay').classList.add('hidden');scoreboardOrientation()};
+$('close-matches').onclick=()=>{$('matches-overlay').classList.add('hidden');scoreboardOrientation()};$('show-matches-btn').onclick=showAllMatches;$('overall-stats-btn').onclick=()=>{$('matches-overlay').classList.add('hidden');scoreboardOrientation();stats()};$('continue-btn').onclick=()=>{$('complete-overlay').classList.add('hidden');state.completionShown=false;save()};$('save-btn').onclick=saveCompletedMatch;$('stats-overlay').addEventListener('click',e=>{if(e.target===$('stats-overlay')){$('stats-overlay').classList.add('hidden');scoreboardOrientation()}});$('matches-overlay').addEventListener('click',e=>{if(e.target===$('matches-overlay')){$('matches-overlay').classList.add('hidden');scoreboardOrientation()}});$('export-btn').onclick=exportBackup;$('export-btn-2').onclick=exportBackup;$('import-btn').onclick=()=>$('import-file').click();$('import-btn-2').onclick=()=>$('import-file').click();$('import-file').onchange=e=>{if(e.target.files[0])importBackup(e.target.files[0]);e.target.value=''};
+renderPlayers();render();checkComplete();scoreboardOrientation();
 acquireWakeLock();
 if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
